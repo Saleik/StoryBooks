@@ -1,13 +1,19 @@
 import path from 'path'
 import express from 'express'
 import dotenv from  'dotenv'
-import connectDB from './config/db'
 import morgan from 'morgan'
 import exphbs from 'express-handlebars'
-import router from './routes/index'
+import index from './routes/index'
+import auth from './routes/auth'
+import passport from 'passport'
+import session from 'express-session'
+import connectDB from './data/db'
 
 // Load config
 dotenv.config({path:'./config/config.env'})
+
+//passport config
+require('./config/passport')(passport)
 
 connectDB()
 
@@ -22,8 +28,22 @@ if(process.env.NODE_ENV === 'development'){
 app.engine('.hbs', exphbs({defaultLayout:'main', extname: '.hbs'}));
 app.set('view engine', '.hbs');
 
+//Sessions
+app.set('http://localhost:3000', 1) // trust first proxy
+app.use(session({
+  secret: 'keyboard cat',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: true }
+}))
+
+//Passport Middleware
+app.use(passport.initialize())
+app.use(passport.session())
+
 //Routes
-app.use('/', router)
+app.use('/', index)
+app.use('/auth', auth)
 
 //Static folder
 app.use(express.static(path.join(__dirname, 'public')))
