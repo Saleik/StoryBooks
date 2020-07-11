@@ -30,8 +30,8 @@ module.exports = function (passport) {
             user = await User.create(newUser);
             done(null, user);
           }
-        } catch (err) {
-          console.error(err);
+        } catch (error) {
+          console.error(error);
         }
       }
     )

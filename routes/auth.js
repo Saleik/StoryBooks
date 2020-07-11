@@ -13,8 +13,16 @@ router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
-    res.redirect("/dashboard");
+    res.status(200).redirect("/dashboard");
   }
 );
+
+//@desc Log Out user
+//@route /auth/logout
+router.get("/logout", (req,res)=>{
+    req.logOut()
+    res.redirect('/')
+})
+
 
 export default router;

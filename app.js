@@ -1,12 +1,15 @@
 import path from 'path'
 import express from 'express'
+import mongoose from 'mongoose'
 import dotenv from  'dotenv'
 import morgan from 'morgan'
 import exphbs from 'express-handlebars'
 import index from './routes/index'
 import auth from './routes/auth'
+import stories from './routes/stories'
 import passport from 'passport'
 import session from 'express-session'
+import MongoConnect from 'connect-mongo'
 import connectDB from './data/db'
 
 // Load config
@@ -19,6 +22,10 @@ connectDB()
 
 const app = express()
 
+//Body parser
+app.use(express.urlencoded({extended:false}))
+app.use(express.json())
+
 //logging
 if(process.env.NODE_ENV === 'development'){
     app.use(morgan('dev'))
@@ -29,12 +36,13 @@ app.engine('.hbs', exphbs({defaultLayout:'main', extname: '.hbs'}));
 app.set('view engine', '.hbs');
 
 //Sessions
-app.set('http://localhost:3000', 1) // trust first proxy
+const MongooseStore = MongoConnect(session)
 app.use(session({
   secret: 'keyboard cat',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: true }
+  store: new MongooseStore({mongooseConnection: mongoose.connection}),
+  cookie: { secure: false } //Set at true if you work in "https" environment
 }))
 
 //Passport Middleware
@@ -44,6 +52,7 @@ app.use(passport.session())
 //Routes
 app.use('/', index)
 app.use('/auth', auth)
+app.use('/stories', stories)
 
 //Static folder
 app.use(express.static(path.join(__dirname, 'public')))
